@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Independentsoft.Office.Spreadsheet;
+using Independentsoft.Office.Spreadsheet.Tables;
 
 namespace Specification_Ver2
 {
@@ -370,6 +371,69 @@ namespace Specification_Ver2
                 aColor = Color.Red;
             string curentTime = DateTime.Now.TimeOfDay.ToString("hh\\:mm\\:ss");
             logBox.AppendText(curentTime + ": " + text + Environment.NewLine, aColor);
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            generateSpec1();
+            Worksheet sheet1 = new Worksheet();
+
+            sheet1["A1"] = new Cell("Опорная ПС");
+            sheet1["B1"] = new Cell("Номер фидера 6(10) кВ");
+            sheet1["C1"] = new Cell("Номер  ТП 6(10)/0,4 кВ");
+            sheet1["D1"] = new Cell("Тип ТП");
+            sheet1["E1"] = new Cell("Кол-во силовых трансформаторов");
+            sheet1["F1"] = new Cell("Мощность кВА");
+            sheet1["G1"] = new Cell("Кол-во отходящих фидеров 0,4");
+            sheet1["H1"] = new Cell("Тип и уставка автоматического выключателя или ток плавкой вставки предохранителя, в А");
+            sheet1["I1"] = new Cell("Населенный пункт");
+            sheet1["J1"] = new Cell("Улица");
+            sheet1["K1"] = new Cell("Дом");
+            sheet1["L1"] = new Cell("Балансовая принадлежность");
+            sheet1["M1"] = new Cell("Широта");
+            sheet1["N1"] = new Cell("Долгота");
+            sheet1["O1"] = new Cell("Тип ТТ");
+            sheet1["P1"] = new Cell("Тип УСПД");
+
+            for (int i=0; i<spec1.Count; i++)
+            {
+                for (int j = 0; i < spec1[i].Count; i++)
+                {
+                    sheet1.Rows[i + 1].Cells[j] = new Cell(spec1[i][j]);
+                }                
+            }
+
+            Table table1 = new Table();
+            table1.ID = 1;
+            table1.Name = "Table1";
+            table1.DisplayName = "Table1";
+            table1.Reference = "A1:D4";
+            table1.AutoFilter = new AutoFilter("A1:D4");
+
+            TableColumn tableColumn1 = new TableColumn(1, "Column1");
+            TableColumn tableColumn2 = new TableColumn(2, "Column2");
+            TableColumn tableColumn3 = new TableColumn(3, "Column3");
+            TableColumn tableColumn4 = new TableColumn(4, "Column4");
+
+            table1.Columns.Add(tableColumn1);
+            table1.Columns.Add(tableColumn2);
+            table1.Columns.Add(tableColumn3);
+            table1.Columns.Add(tableColumn4);
+
+            sheet1.Tables.Add(table1);
+
+            //set columns width
+            Column columnInfo = new Column();
+            columnInfo.FirstColumn = 1; //from column A
+            columnInfo.LastColumn = 4; //to column D
+            columnInfo.Width = 15;
+
+            sheet1.Columns.Add(columnInfo);
+
+            Workbook book = new Workbook();
+            book.Sheets.Add(sheet1);
+
+            book.Save("D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\output.xlsx", true);
         }
     }
     public static class RichTextBoxExtensions
