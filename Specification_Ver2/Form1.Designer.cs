@@ -185,6 +185,7 @@
             this.button2.TabIndex = 14;
             this.button2.Text = "Прил - ние 2";
             this.button2.UseVisualStyleBackColor = true;
+            this.button2.Click += new System.EventHandler(this.button1_Click1);
             // 
             // textBox3
             // 

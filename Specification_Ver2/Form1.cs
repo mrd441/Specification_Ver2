@@ -9,6 +9,8 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using Independentsoft.Office.Spreadsheet;
 using Independentsoft.Office.Spreadsheet.Tables;
+using Independentsoft.Office.Spreadsheet.Styles;
+using Independentsoft.Office.Odf.Styles;
 
 namespace Specification_Ver2
 {
@@ -19,7 +21,7 @@ namespace Specification_Ver2
         List<List<string>> spec1;
         List<List<string>> reestr;
 
-        Dictionary<string, Dictionary<string, Dictionary <string, int[]>>> NeOprPU;
+        Dictionary<string, Dictionary<string, Dictionary<string, int[]>>> NeOprPU;
         int NeOprPU_Count;
 
         List<string> filtrOpornayaPS;
@@ -58,7 +60,7 @@ namespace Specification_Ver2
             listBox3.Items.AddRange(filtrOpornayaPS.ToArray());
         }
         private void readFileProc(string file)
-        {            
+        {
             loging(0, "Чтение файла...");
             try
             {
@@ -101,11 +103,11 @@ namespace Specification_Ver2
                             if (!filtrVariantPU.Contains(newRow[25])) filtrVariantPU.Add(newRow[25]);
                             add_NeOprPU(newRow);
                             inSheet1.Add(newRow);
-                        }                    
+                        }
                 }
                 loging(0, "Прочитано " + inSheet1.Count.ToString() + " строк из листа " + sheet.Name);
 
-                
+
 
                 sheet = book.Sheets[1];
                 if (sheet is Worksheet)
@@ -117,25 +119,25 @@ namespace Specification_Ver2
                             List<string> newRow = new List<string>();
                             for (int j = 0; j < 20; j++)
                             {
-                                if (j < worksheet.Rows[i].Cells.Count)    
+                                if (j < worksheet.Rows[i].Cells.Count)
                                     newRow.Add(getStringCell(worksheet.Rows[i].Cells[j]));
                                 else
-                                    newRow.Add("");                                                 
+                                    newRow.Add("");
                             }
                             newRow.Add(getTypeUSPD(newRow));
                             if (!filtrOpornayaPS.Contains(newRow[2])) filtrOpornayaPS.Add(newRow[2]);
-                            inSheet2.Add(newRow);                            
-                        }                    
+                            inSheet2.Add(newRow);
+                        }
                 }
-                loging(0, "Прочитано " + inSheet2.Count.ToString() + " строк из листа " + sheet.Name);                
+                loging(0, "Прочитано " + inSheet2.Count.ToString() + " строк из листа " + sheet.Name);
                 loging(0, "Чтение файла завершено");
                 if (NeOprPU_Count < inSheet2.Count)
                     loging(2, "Ошибка: на втором листе есть записи не для всех ПУ из первого листа");
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 loging(2, "Ошибка: " + ex.Message);
-            }            
+            }
         }
         private void generateSpec2()
         {
@@ -168,38 +170,46 @@ namespace Specification_Ver2
         {
             loging(1, "Генерация Приложения №1...");
             spec1 = new List<List<string>>();
-            foreach(List<string> aRow in inSheet2)
+            foreach (List<string> aRow in inSheet2)
             {
                 List<string> newRow = new List<string>();
-                newRow.Add(aRow[2]);
-                newRow.Add(aRow[3]);
-                newRow.Add(aRow[4]);
-                newRow.Add(aRow[5]);
-                newRow.Add(aRow[6]);
-                newRow.Add(aRow[7]);
-                newRow.Add(aRow[8]);
-                newRow.Add(aRow[9]);
-                newRow.Add(aRow[13]);
-                newRow.Add(aRow[14]);
-                newRow.Add(aRow[15]);
-                newRow.Add(aRow[16]);
-                newRow.Add(aRow[17]);
-                newRow.Add(aRow[18]); 
-                newRow.Add(getTypeTT(aRow));
-                newRow.Add(getTypeUSPD(aRow));
+                newRow.Add(aRow[2]); //1
+                newRow.Add(aRow[3]); //2
+                newRow.Add(aRow[4]); //3
+                newRow.Add(aRow[5]); //4
+                newRow.Add(aRow[6]); //5
+                newRow.Add(aRow[7]); //6
+                newRow.Add(aRow[8]); //7
+                newRow.Add(aRow[9]); //8
+                newRow.Add(aRow[13]);//9
+                newRow.Add(aRow[14]);//10
+                newRow.Add(aRow[15]);//11
+                newRow.Add(aRow[16]);//12
+                newRow.Add(convertCoord(aRow[17]));//13
+                newRow.Add(convertCoord(aRow[18]));//14 
+                newRow.Add(getTypeTT(aRow));  //15
+                newRow.Add(getTypeUSPD(aRow));//16
                 spec1.Add(newRow);
             }
             //loging(1, "Генерация Приложения №1 завершена");
         }
+        private string convertCoord(string coord)
+        {
+            string newCoord = coord.Replace('.', ',');
+            int pos = newCoord.IndexOf(',');
+            if (pos > -1 && coord.Length > pos + 1 + 6) //6 символов после точки
+                newCoord = newCoord.Substring(0, pos + 1 + 6);
+            return newCoord;
+        }
         private void add_NeOprPU(List<string> aRow)
         {
-            
+
 
             string res = aRow[1];
             string opor = aRow[2];
             string tp = aRow[4];
 
-            if (!NeOprPU.ContainsKey(res)) NeOprPU.Add(res,new Dictionary<string, Dictionary<string, int[]>>());
+            if (!NeOprPU.ContainsKey(res)) NeOprPU.Add(res, new Dictionary<string, Dictionary<string, int[]>>());
             if (!NeOprPU[res].ContainsKey(opor)) NeOprPU[res].Add(opor, new Dictionary<string, int[]>());
             if (!NeOprPU[res][opor].ContainsKey(tp))
             {
@@ -208,7 +218,7 @@ namespace Specification_Ver2
             }
             NeOprPU[res][opor][tp][0]++;
             if (aRow[22] == "1")
-                NeOprPU[res][opor][tp][1] ++;
+                NeOprPU[res][opor][tp][1]++;
         }
         private string getVariantPU(List<string> aRow) //Вариант ПУ
         {
@@ -269,7 +279,7 @@ namespace Specification_Ver2
                 else
                     variant = "2";
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 loging(2, "Ошибка: не удалось определить Тип УСПД строки № п/п " + aRow[0] + ". На листе 1 нет ни одной записи для комбинации РЭС, ПУ, ТП " + aRow[1] + "; " + aRow[2] + "; " + aRow[4]);
                 return "Ошибка !!!";
@@ -373,67 +383,193 @@ namespace Specification_Ver2
             logBox.AppendText(curentTime + ": " + text + Environment.NewLine, aColor);
         }
 
-        private void button1_Click(object sender, EventArgs e)
+        private bool exportToPDF(string workbookPath, string outputPath)
         {
-            generateSpec1();
-            Worksheet sheet1 = new Worksheet();
+            loging(1, "Начано экспорта в pdf.");
+            Microsoft.Office.Interop.Excel.Application excelApplication;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook;
 
-            sheet1["A1"] = new Cell("Опорная ПС");
-            sheet1["B1"] = new Cell("Номер фидера 6(10) кВ");
-            sheet1["C1"] = new Cell("Номер  ТП 6(10)/0,4 кВ");
-            sheet1["D1"] = new Cell("Тип ТП");
-            sheet1["E1"] = new Cell("Кол-во силовых трансформаторов");
-            sheet1["F1"] = new Cell("Мощность кВА");
-            sheet1["G1"] = new Cell("Кол-во отходящих фидеров 0,4");
-            sheet1["H1"] = new Cell("Тип и уставка автоматического выключателя или ток плавкой вставки предохранителя, в А");
-            sheet1["I1"] = new Cell("Населенный пункт");
-            sheet1["J1"] = new Cell("Улица");
-            sheet1["K1"] = new Cell("Дом");
-            sheet1["L1"] = new Cell("Балансовая принадлежность");
-            sheet1["M1"] = new Cell("Широта");
-            sheet1["N1"] = new Cell("Долгота");
-            sheet1["O1"] = new Cell("Тип ТТ");
-            sheet1["P1"] = new Cell("Тип УСПД");
+            // Create new instance of Excel
+            excelApplication = new Microsoft.Office.Interop.Excel.Application();
 
-            for (int i=0; i<spec1.Count; i++)
+            // Make the process invisible to the user
+            excelApplication.ScreenUpdating = false;
+
+            // Make the process silent
+            excelApplication.DisplayAlerts = false;
+
+            // Open the workbook that you wish to export to PDF
+            excelWorkbook = excelApplication.Workbooks.Open(workbookPath);
+
+            // If the workbook failed to open, stop, clean up, and bail out
+            if (excelWorkbook == null)
             {
-                for (int j = 0; i < spec1[i].Count; i++)
-                {
-                    sheet1.Rows[i + 1].Cells[j] = new Cell(spec1[i][j]);
-                }                
+                excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+                loging(2, "Ошибка генерации pdf файла. Не удалось открыть excel файл.");
+                return false;
             }
 
-            Table table1 = new Table();
-            table1.ID = 1;
-            table1.Name = "Table1";
-            table1.DisplayName = "Table1";
-            table1.Reference = "A1:D4";
-            table1.AutoFilter = new AutoFilter("A1:D4");
+            var exportSuccessful = true;
+            try
+            {
+                // Call Excel's native export function (valid in Office 2007 and Office 2010, AFAIK)
+                excelWorkbook.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, outputPath);
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации pdf файла. " + ex.Message);
+                exportSuccessful = false;
 
-            TableColumn tableColumn1 = new TableColumn(1, "Column1");
-            TableColumn tableColumn2 = new TableColumn(2, "Column2");
-            TableColumn tableColumn3 = new TableColumn(3, "Column3");
-            TableColumn tableColumn4 = new TableColumn(4, "Column4");
+                // Do something with any exceptions here, if you wish...
+                // MessageBox.Show...        
+            }
+            finally
+            {
+                // Close the workbook, quit the Excel, and clean up regardless of the results...
+                excelWorkbook.Close();
+                excelApplication.Quit();
 
-            table1.Columns.Add(tableColumn1);
-            table1.Columns.Add(tableColumn2);
-            table1.Columns.Add(tableColumn3);
-            table1.Columns.Add(tableColumn4);
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+            loging(0, "pdf файл успешно сохранен.");
 
-            sheet1.Tables.Add(table1);
+            return exportSuccessful;
+        }
+        private void button1_Click1(object sender, EventArgs e)
+        {
+           
+        }
+        private void button1_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                generateSpec1();
+                Worksheet sheet1 = new Worksheet();
 
-            //set columns width
-            Column columnInfo = new Column();
-            columnInfo.FirstColumn = 1; //from column A
-            columnInfo.LastColumn = 4; //to column D
-            columnInfo.Width = 15;
+                sheet1["A1"] = new Cell("Опорная ПС");//13
+                sheet1["B1"] = new Cell("Номер фидера 6(10) кВ");
+                sheet1["C1"] = new Cell("Номер ТП 6(10)/0,4 кВ"); //11
+                sheet1["D1"] = new Cell("Тип ТП");
+                sheet1["E1"] = new Cell("Кол-во силовых трансформаторов");
+                sheet1["F1"] = new Cell("Мощность кВА");
+                sheet1["G1"] = new Cell("Кол-во отходящих фидеров 0,4");//10
+                sheet1["H1"] = new Cell("Тип и уставка автоматического выключателя или ток плавкой вставки предохранителя, в А");//14
+                sheet1["I1"] = new Cell("Населенный пункт");
+                sheet1["J1"] = new Cell("Улица");
+                sheet1["K1"] = new Cell("Дом");
+                sheet1["L1"] = new Cell("Балансовая принадлежность");//12
+                sheet1["M1"] = new Cell("Широта");
+                sheet1["N1"] = new Cell("Долгота");
+                sheet1["O1"] = new Cell("Тип ТТ");
+                sheet1["P1"] = new Cell("Тип УСПД");//11
 
-            sheet1.Columns.Add(columnInfo);
+                foreach (Cell c in sheet1.Rows[0].Cells)
+                {
+                    c.Format = new CellFormat();
+                    c.Format.Alignment = new CellAlignment();                    
+                    c.Format.Alignment.WrapText = true;
+                    c.Format.Alignment.VerticalAlignment = Independentsoft.Office.Spreadsheet.Styles.VerticalAlignment.Center;
+                    c.Format.Alignment.HorizontalAlignment = Independentsoft.Office.Spreadsheet.Styles.HorizontalAlignment.Center;
+                    c.Format.Font = new Independentsoft.Office.Spreadsheet.Font();
+                    c.Format.Font.Name = "Times New Roman";
+                    c.Format.Font.Size = 10;
+                }
+                
+                for (int i = 0; i < spec1.Count; i++)
+                {
+                    Row aRow = new Row();
+                    for (int j = 0; j < spec1[i].Count; j++)
+                    {
+                        Cell c = new Cell(spec1[i][j]);                        
+                        c.Format = new CellFormat();
+                        c.Format.Alignment = new CellAlignment();
+                        c.Format.Alignment.WrapText = true;
+                        c.Format.Alignment.VerticalAlignment = Independentsoft.Office.Spreadsheet.Styles.VerticalAlignment.Center;
+                        c.Format.Alignment.HorizontalAlignment = Independentsoft.Office.Spreadsheet.Styles.HorizontalAlignment.Center;
+                        c.Format.Font = new Independentsoft.Office.Spreadsheet.Font();
+                        c.Format.Font.Name = "Times New Roman";
+                        c.Format.Font.Size = 10;
+                        aRow.Cells.Add(c);
+                    }
+                        
+                    sheet1.Rows.Add(aRow);
+                }
 
-            Workbook book = new Workbook();
-            book.Sheets.Add(sheet1);
+                //for (int i = 0; i < spec1.Count; i++)
+                //    for (char c = 'A'; c <= 'P'; c++)
+                //        sheet1[c + (i + 1).ToString()] = new Cell(spec1[i][(int)c - 65]);
 
-            book.Save("D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\output.xlsx", true);
+                Table table1 = new Table();
+                table1.ID = 1;
+                table1.Name = "Table1";
+                table1.DisplayName = "Table1";
+                table1.TotalsRowShown = false;
+                table1.Reference = "A1:P" + (spec1.Count + 1).ToString();
+                table1.AutoFilter = new AutoFilter("A1:P" + (spec1.Count + 1).ToString());
+                table1.Style = new Independentsoft.Office.Spreadsheet.Tables.TableStyle();
+                table1.Style.ShowRowStripes = true;
+                table1.Style.Name = "TableStyleLight15";
+
+                for (int i = 1; i <= 16; i++)
+                {
+                    table1.Columns.Add(new TableColumn(i, sheet1[(char)(i + 64) + "1"].Value));
+                }
+
+                sheet1.Tables.Add(table1);
+                //sheet1.HeaderFooterSettings.FirstHeader = "Реестр ТП";
+                //sheet1.HeaderFooterSettings.OddHeader = "Приложение №1";
+                //sheet1.HeaderFooterSettings.OddHeader = "стр. &[Страница] / &[Страниц]";
+
+                //set columns width
+                Column columnInfo = new Column();
+                columnInfo.FirstColumn = 1; //from column A
+                columnInfo.LastColumn = 7; //to column D
+                columnInfo.Width = 30;
+
+                //sheet1.Columns.Add(columnInfo);
+
+                Workbook book = new Workbook();
+                book.Sheets.Add(sheet1);
+                //sheet1.HeaderFooterSettings.EvenHeader = "Реестр ТП";
+                //sheet1.HeaderFooterSettings.DifferentOddEven = true;
+                sheet1.HeaderFooterSettings.OddFooter = @"стр. &P / &N";
+                sheet1.HeaderFooterSettings.OddHeader = "Приложение №1";
+                sheet1.PageSetupSettings.Orientation = Independentsoft.Office.Spreadsheet.Orientation.Landscape;
+                //sheet1.PageMargins = new PageMargins();
+                //sheet1.PageMargins.Bottom = 1.5;
+                //sheet1.PageMargins.Top = 1;
+                //sheet1.PageMargins.Left = 2;
+                //sheet1.PageMargins.Right = 1;
+                //sheet1.PageMargins.Header = 1;
+
+                sheet1.VerticalPageBreaks.Add(new Independentsoft.Office.Spreadsheet.Break());
+                sheet1.VerticalPageBreaks[0].IsManual = true;
+                sheet1.VerticalPageBreaks[0].Min = 16;
+                sheet1.VerticalPageBreaks[0].Max = 16;
+                sheet1.Columns[0].Width = 13;
+                sheet1.Columns[0].Width = 13;
+                sheet1.Columns[0].Width = 13;
+                sheet1.Columns[0].Width = 13;
+                sheet1.Columns[0].Width = 13;
+                sheet1.Columns[0].Width = 13;
+
+
+                //sheet1.PageSetupSettings.PageOrder = PageOrder.DownThenOver;
+
+                book.Save("D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\output.xlsx", true);
+            }
+            catch (Exception er)
+            {
+                loging(2, "Ошибка при сохранении в файл. " + er.Message);
+            }
+            
+            //exportToPDF("D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\output.xlsx", "D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\output.pdf");
+
+
         }
     }
     public static class RichTextBoxExtensions
