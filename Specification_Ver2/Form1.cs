@@ -22,6 +22,7 @@ namespace Specification_Ver2
         List<List<string>> spec1;
         List<List<string>> spec2;
 
+        List<List<string>> NeOprPUList;
         Dictionary<string, Dictionary<string, Dictionary<string, int[]>>> NeOprPU;
         int NeOprPU_Count;
 
@@ -91,6 +92,7 @@ namespace Specification_Ver2
                 inSheet1 = new List<List<string>>();
                 inSheet2 = new List<List<string>>();
 
+                NeOprPUList = new List<List<string>>();
                 NeOprPU = new Dictionary<string, Dictionary<string, Dictionary<string, int[]>>>();
                 NeOprPU_Count = 0;
 
@@ -196,26 +198,27 @@ namespace Specification_Ver2
         }
         private void generateSpec2()
         {
-            //loging(1, "Генерация Приложения №2...");
+            
             spec2 = new List<List<string>>();
             foreach (List<string> aRow in inSheet1)
             {
+                if (!filterSpec2(aRow)) continue;
                 List<string> newRow = new List<string>();
-                newRow.Add(aRow[0]);
-                newRow.Add(aRow[1]);
                 newRow.Add(aRow[2]);
-                newRow.Add(aRow[3]);
                 newRow.Add(aRow[4]);
                 newRow.Add(aRow[5]);
                 newRow.Add(aRow[6]);
+                newRow.Add(aRow[7]);
+                newRow.Add(aRow[8]);
                 newRow.Add(aRow[9]);
+                newRow.Add(aRow[10]);
+                newRow.Add(aRow[11]);
+                newRow.Add(aRow[12]);
                 newRow.Add(aRow[13]);
                 newRow.Add(aRow[14]);
-                newRow.Add(aRow[15]);
                 newRow.Add(aRow[16]);
-                newRow.Add(aRow[17]);
-                newRow.Add(aRow[18]);
-                newRow.Add(getTypeTT(aRow));
+                newRow.Add(convertCoord(aRow[17]));
+                newRow.Add(convertCoord(aRow[18]));
                 newRow.Add(aRow[25]);
                 spec2.Add(newRow);
             }
@@ -258,6 +261,25 @@ namespace Specification_Ver2
                 neopr >= neOprFrom.Value &&
                 neopr <= neOprTo.Value;
         }
+        private bool filterSpec2(List<string> aRow)
+        {
+            if (InvokeRequired)
+            {
+                bool foo = false;
+                this.Invoke((MethodInvoker)delegate
+                {
+                    foo = filterSpec2(aRow);
+                });
+                return foo;
+            }
+            decimal neopr = getPercentNeopr(aRow[1], aRow[2], aRow[4]);
+            return
+                listBoxOpornayaPS.SelectedItems.Contains(aRow[2]) &&
+                listBoxTypePS.SelectedItems.Contains(aRow[14]) &&
+                listBox1.SelectedItems.Contains(aRow[25]) &&
+                neopr >= neOprFrom.Value &&
+                neopr <= neOprTo.Value;
+        }
         private string convertCoord(string coord)
         {
             string newCoord = coord.Replace('.', ',');
@@ -278,6 +300,14 @@ namespace Specification_Ver2
             {
                 NeOprPU_Count++;
                 NeOprPU[res][opor].Add(tp, new int[] { 0, 0 });
+
+                List<string> NeOprPURow = new List<string>();
+                NeOprPURow.Add(aRow[1]);
+                NeOprPURow.Add(aRow[2]);
+                NeOprPURow.Add(aRow[4]);
+                NeOprPURow.Add(aRow[6]);
+                NeOprPURow.Add(aRow[20]);                
+                NeOprPUList.Add(NeOprPURow);
             }
             NeOprPU[res][opor][tp][0]++;
             if (aRow[22] == "1")
@@ -442,6 +472,27 @@ namespace Specification_Ver2
             }
             pictureBox1.Visible = value;
             readFile.Enabled = !value;
+            button1.Enabled = !value;
+            button2.Enabled = !value;
+            button3.Enabled = !value;
+            button4.Enabled = !value;
+            button5.Enabled = !value;
+            button6.Enabled = !value;
+            button7.Enabled = !value;
+            button8.Enabled = !value;
+            textBox1.Enabled = !value;
+            textBox2.Enabled = !value;
+            textBox3.Enabled = !value;
+            textBox4.Enabled = !value;
+            textBox5.Enabled = !value;
+            textBox6.Enabled = !value;
+            textBox7.Enabled = !value;
+            textBox8.Enabled = !value;
+            
+            listBox1.Enabled = !value;
+            listBoxTypePS.Enabled = !value;
+            listBoxTypeUSPD.Enabled = !value;
+            listBoxOpornayaPS.Enabled = !value;
         }
         public void loging(int level, string text)
         {
@@ -489,7 +540,7 @@ namespace Specification_Ver2
             loging(0, "pdf файл успешно сохранен.");
 
         }
-        private void button1_Click(object sender, EventArgs e)
+        private async void button1_Click(object sender, EventArgs e)
         {
             generateSpec1();
             string s = Environment.CurrentDirectory;
@@ -681,9 +732,62 @@ namespace Specification_Ver2
 
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private void printSpec22()
         {
-            generateSpec2();
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон2.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+
+
+                object[,] arr = new object[spec2.Count, 16];
+
+                for (int i = 0; i < spec2.Count; i++)
+                {
+                    for (int j = 0; j < spec2[i].Count; j++)
+                        arr[i,j] = spec2[i][j];
+                }
+                
+                Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "P" + (spec2.Count + 1).ToString());
+                range.Value = arr;
+
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox2.Text);
+
+                if (checkBox2.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    excelWorkbook.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox2.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+                excelApplication = null;
+                excelWorkbook = null;
+                loging(0, "Экспорт в pdf файл...");
+            }
+        }
+
+        private void printSpec2()
+        {
+            
             string s = Environment.CurrentDirectory;
             try
             {
@@ -708,11 +812,12 @@ namespace Specification_Ver2
                         aRow.Cells.Add(c);
                     }
 
-                    sheet.Rows.Add(aRow);
-                    sheet.Tables[0].Reference = "A1:P" + (spec2.Count + 1).ToString();
+                    sheet.Rows.Add(aRow);                    
                 }
+                sheet.Tables[0].Reference = "A1:P" + (spec2.Count + 1).ToString();
                 if (!checkDirectory(textBox2.Text))
                     throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение файла Excel...");
                 book.Save(textBox2.Text, true);
                 loging(0, "Приложения2 успешно сгенерировано.");
             }
@@ -723,7 +828,17 @@ namespace Specification_Ver2
             }
             if (checkBox2.Checked)
                 exportToPDF(textBox2.Text, textBox2.Text.Replace(".xlsx", ".pdf"));
+        
         }
+        private async void button2_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №2...");
+            await Task.Run(() => generateSpec2());
+            await Task.Run(() => printSpec22());
+            loging(1, "Генерация Приложения №2 завершено.");
+            isLoading(false);
+        }   
     }
     public static class RichTextBoxExtensions
     {
