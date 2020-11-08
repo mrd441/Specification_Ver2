@@ -35,7 +35,7 @@ namespace Specification_Ver2
         {
             InitializeComponent();
             isLoading(false);
-            textBox0.Text = "D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\для программиста\\Книга1.xlsx";
+            textBox0.Text = "D:\\work\\VisualStudio\\Specification_Ver2\\testInput\\Дахадаевские РЭС Реестр потребителей.xlsx";
 
             button1.Enabled = false;
             button2.Enabled = false;
@@ -66,6 +66,11 @@ namespace Specification_Ver2
                 this.Invoke(new Action(loadFilters));
                 return;
             }
+            listBox1.Items.Clear();
+            listBoxTypePS.Items.Clear();
+            listBoxOpornayaPS.Items.Clear();
+            listBoxTypeUSPD.Items.Clear();
+            
             listBox1.Items.AddRange(filtrVariantPU.ToArray());
             listBoxTypePS.Items.AddRange(filtrTypePU.ToArray());
             listBoxOpornayaPS.Items.AddRange(filtrOpornayaPS.ToArray());
@@ -119,7 +124,7 @@ namespace Specification_Ver2
                                     newRow.Add("");
                             }
                             newRow.Add("Фидер №" + newRow[3]);    // добавить столбец "Фидер 10кВ" 
-                            newRow.Add(""); // добавить столбец "Вариант по фазе"
+                            newRow.Add(getVariantPoFaze(newRow)); // добавить столбец "Вариант по фазе"
                             newRow.Add(getNeOprPU(newRow)); // добавить столбец "Неопрашиваемый ПУ"
                             newRow.Add(""); // добавить столбец "Условия для вариантов"
                             newRow.Add(""); // добавить столбец "Вариант по типу"
@@ -131,9 +136,8 @@ namespace Specification_Ver2
                             inSheet1.Add(newRow);
                         }
                 }
+                updateNeOprPUList();
                 loging(0, "Прочитано " + inSheet1.Count.ToString() + " строк из листа " + sheet.Name);
-
-
 
                 sheet = book.Sheets[1];
                 if (sheet is Worksheet)
@@ -166,6 +170,18 @@ namespace Specification_Ver2
             catch (Exception ex)
             {
                 loging(2, "Ошибка: " + ex.Message);
+            }
+        }
+        private void updateNeOprPUList()
+        {
+            foreach (List<string> aRow in NeOprPUList)
+            {
+                int a0 = NeOprPU[aRow[0]][aRow[1]][aRow[2]][0];
+                int a1 = NeOprPU[aRow[0]][aRow[1]][aRow[2]][1];
+                string a2 = ((a1 * 100) / a0).ToString() + "%";
+                aRow.Add(a0.ToString());
+                aRow.Add(a1.ToString());
+                aRow.Add(a2);
             }
         }
         private void updateTexboxes()
@@ -226,7 +242,7 @@ namespace Specification_Ver2
         }
         private void generateSpec1()
         {
-            loging(1, "Генерация Приложения №1...");
+            
             spec1 = new List<List<string>>();
             foreach (List<string> aRow in inSheet2)
             {
@@ -254,6 +270,15 @@ namespace Specification_Ver2
         }
         private bool filterSpec1(List<string> aRow)
         {
+            if (InvokeRequired)
+            {
+                bool foo = false;
+                this.Invoke((MethodInvoker)delegate
+                {
+                    foo = filterSpec1(aRow);
+                });
+                return foo;
+            }
             decimal neopr = getPercentNeopr(aRow[1], aRow[2], aRow[4]);
             return 
                 listBoxOpornayaPS.SelectedItems.Contains(aRow[2]) && 
@@ -279,6 +304,46 @@ namespace Specification_Ver2
                 listBox1.SelectedItems.Contains(aRow[25]) &&
                 neopr >= neOprFrom.Value &&
                 neopr <= neOprTo.Value;
+        }
+        private bool filterSpec3(List<string> aRow)
+        {
+            if (InvokeRequired)
+            {
+                bool foo = false;
+                this.Invoke((MethodInvoker)delegate
+                {
+                    foo = filterSpec3(aRow);
+                });
+                return foo;
+            }
+            decimal neopr = getPercentNeopr(aRow[0], aRow[1], aRow[2]);
+            int neopCount = getCountNeopr(aRow[0], aRow[1], aRow[2]);
+            return
+                listBoxOpornayaPS.SelectedItems.Contains(aRow[1]) &&
+                neopr >= neOprFrom.Value &&
+                neopr <= neOprTo.Value &&
+                neopCount >= neOprCountFrom.Value &&
+                neopCount <= neOprCountTo.Value;
+        }
+        private bool filterSpec4(List<string> aRow)
+        {
+            if (InvokeRequired)
+            {
+                bool foo = false;
+                this.Invoke((MethodInvoker)delegate
+                {
+                    foo = filterSpec4(aRow);
+                });
+                return foo;
+            }
+            decimal neopr = getPercentNeopr(aRow[1], aRow[2], aRow[4]);
+            int neopCount = getCountNeopr(aRow[1], aRow[2], aRow[4]);
+            return
+                listBoxOpornayaPS.SelectedItems.Contains(aRow[2]) &&
+                neopr >= neOprFrom.Value &&
+                neopr <= neOprTo.Value &&
+                neopCount >= neOprCountFrom.Value &&
+                neopCount <= neOprCountTo.Value;
         }
         private string convertCoord(string coord)
         {
@@ -326,6 +391,36 @@ namespace Specification_Ver2
                 loging(2, "Ошибка. Не найдет процент неопроса для комбинации: " + res + "; " + ps + "; " + tp);
             return r;
         }
+        private int getCountNeopr(string res, string ps, string tp)
+        {
+            int r = -1;
+            try
+            {
+                r = NeOprPU[res][ps][tp][1];
+            }
+            catch { }
+
+            if (r == -1)
+                loging(2, "Ошибка. Не найдет процент неопроса для комбинации: " + res + "; " + ps + "; " + tp);
+            return r;
+        }
+
+        private string getVariantPoFaze(List<string> aRow) //Вариант ПУ
+        {
+            string value14 = aRow[14]; //Тип прибора учёта(ПУ)            
+
+            string var1 = "";
+            if (value14.Contains("1"))
+                return "1";
+            else if (value14.Contains("3"))
+                return "2";
+            else
+            {
+                loging(2, "Ошибка: не удалось определить Вариант ПУ строки № п/п " + aRow[0] + ". \"Тип прибора учета\" не содержит 1 или 3");
+                return "Ошибка !!!";
+            }
+        }
+
         private string getVariantPU(List<string> aRow) //Вариант ПУ
         {
             string value12 = aRow[12]; //Тип ввода
@@ -540,49 +635,7 @@ namespace Specification_Ver2
             loging(0, "pdf файл успешно сохранен.");
 
         }
-        private async void button1_Click(object sender, EventArgs e)
-        {
-            generateSpec1();
-            string s = Environment.CurrentDirectory;
-            try
-            {   
-
-                Workbook book = new Workbook(s + "\\Шаблон1.xlsx");            
-                Worksheet sheet = (Worksheet)book.Sheets[0];
-                sheet.Rows.Remove(sheet.Rows.Last());
-                for (int i = 0; i < spec1.Count; i++)
-                {
-                    Row aRow = new Row();
-                    for (int j = 0; j < spec1[i].Count; j++)
-                    {
-                        Cell c = new Cell(spec1[i][j]);
-                        c.Format = new CellFormat();
-                        c.Format.Alignment = new CellAlignment();
-                        c.Format.Alignment.WrapText = true;
-                        c.Format.Alignment.VerticalAlignment = Independentsoft.Office.Spreadsheet.Styles.VerticalAlignment.Center;
-                        c.Format.Alignment.HorizontalAlignment = Independentsoft.Office.Spreadsheet.Styles.HorizontalAlignment.Center;
-                        c.Format.Font = new Independentsoft.Office.Spreadsheet.Font();
-                        c.Format.Font.Name = "Times New Roman";
-                        c.Format.Font.Size = 10;
-                        aRow.Cells.Add(c);
-                    }
-
-                    sheet.Rows.Add(aRow);
-                    sheet.Tables[0].Reference = "A1:P" + (spec1.Count + 1).ToString();
-                }
-                if (!checkDirectory(textBox1.Text))
-                    throw new Exception("Не верный путь для сохранения файла");
-                book.Save(textBox1.Text, true);
-                loging(0, "Приложения1 успешно сгенерировано.");
-            }
-            catch (Exception ex)
-            {
-                loging(2, "Ошибка генерации Приложения1. " + ex.Message);
-                return;
-            }            
-            if (checkBox1.Checked)
-                exportToPDF(textBox1.Text, textBox1.Text.Replace(".xlsx",".pdf"));
-        }
+        
         private bool checkDirectory(string dir)
         {
             string path = dir;
@@ -732,6 +785,50 @@ namespace Specification_Ver2
 
         }
 
+        private void printSpec1()
+        {
+            string s = Environment.CurrentDirectory;
+            try
+            {
+
+                Workbook book = new Workbook(s + "\\Шаблон1.xlsx");
+                Worksheet sheet = (Worksheet)book.Sheets[0];
+                sheet.Rows.Remove(sheet.Rows.Last());
+                for (int i = 0; i < spec1.Count; i++)
+                {
+                    Row aRow = new Row();
+                    for (int j = 0; j < spec1[i].Count; j++)
+                    {
+                        Cell c = new Cell(spec1[i][j]);
+                        c.Format = new CellFormat();
+                        c.Format.Alignment = new CellAlignment();
+                        c.Format.Alignment.WrapText = true;
+                        c.Format.Alignment.VerticalAlignment = Independentsoft.Office.Spreadsheet.Styles.VerticalAlignment.Center;
+                        c.Format.Alignment.HorizontalAlignment = Independentsoft.Office.Spreadsheet.Styles.HorizontalAlignment.Center;
+                        c.Format.Font = new Independentsoft.Office.Spreadsheet.Font();
+                        c.Format.Font.Name = "Times New Roman";
+                        c.Format.Font.Size = 10;
+                        aRow.Cells.Add(c);
+                    }
+
+                    sheet.Rows.Add(aRow);
+                    sheet.Tables[0].Reference = "A1:P" + (spec1.Count + 1).ToString();
+                }
+                if (!checkDirectory(textBox1.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                book.Save(textBox1.Text, true);
+                loging(0, "Генерация Приложения1 завершено.");
+            }
+            catch (Exception ex)
+            {
+                loging(2, "Ошибка генерации Приложения1. " + ex.Message);
+                return;
+            }
+            if (checkBox1.Checked)
+                exportToPDF(textBox1.Text, textBox1.Text.Replace(".xlsx", ".pdf"));
+        }
+
+
         private void printSpec22()
         {
             string s = Environment.CurrentDirectory;
@@ -781,7 +878,551 @@ namespace Specification_Ver2
                     excelApplication.Quit();
                 excelApplication = null;
                 excelWorkbook = null;
-                loging(0, "Экспорт в pdf файл...");
+                loging(0, "Генерация Приложения2 завершено.");
+            }
+        }
+
+        private void printSpec3()
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон3.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
+
+
+                object[,] arr = new object[NeOprPUList.Count, 8];
+
+                int ii = -1;
+                for (int i = 0; i < NeOprPUList.Count; i++)
+                {
+                    if (!filterSpec3(NeOprPUList[i])) continue;
+                    ii++;
+                    for (int j = 0; j < NeOprPUList[i].Count; j++)
+                        arr[ii, j] = NeOprPUList[i][j];
+                }
+
+                if (ii >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "H" + (ii+2).ToString());
+                    range.Value = arr;
+                }
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet2 = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                Microsoft.Office.Interop.Excel.PivotTable pivot = (Microsoft.Office.Interop.Excel.PivotTable)workSheet2.PivotTables("PivotTable1");
+                pivot.SourceData = "Лист1!R1C1:R" + (ii + 2).ToString() + "C8" ;
+                pivot.RefreshTable();
+
+                if (!checkDirectory(textBox3.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox3.Text);
+
+                if (checkBox3.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    workSheet2.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox3.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+                
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+        }
+
+        private void printSpec4()
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон4.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
+                object[,] arr = new object[NeOprPUList.Count, 8];
+                int ii = -1;
+                for (int i = 0; i < NeOprPUList.Count; i++)
+                {
+                    if (!filterSpec3(NeOprPUList[i])) continue;
+                    ii++;
+                    for (int j = 0; j < NeOprPUList[i].Count; j++)
+                        arr[ii, j] = NeOprPUList[i][j];
+                }
+
+                if (ii >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "H" + (ii + 2).ToString());
+                    range.Value = arr;
+                }
+
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[3];
+                arr = new object[inSheet1.Count, 26];
+                int ii2 = -1;
+                for (int i = 0; i < inSheet1.Count; i++)
+                {
+                    if (!filterSpec4(inSheet1[i])) continue;
+                    ii2++;
+                    for (int j = 0; j < inSheet1[i].Count; j++)
+                        arr[ii2, j] = inSheet1[i][j];
+                }
+
+                if (ii2 >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "Z" + (ii2 + 2).ToString());
+                    range.Value = arr;
+                }
+                
+                Microsoft.Office.Interop.Excel.Worksheet workSheet2 = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                //Microsoft.Office.Interop.Excel.PivotCaches pivotCaches = (Microsoft.Office.Interop.Excel.PivotCaches)excelWorkbook.PivotCaches();
+                Microsoft.Office.Interop.Excel.Connections connex = (Microsoft.Office.Interop.Excel.Connections)excelWorkbook.Connections;
+                foreach (Microsoft.Office.Interop.Excel.WorkbookConnection connection in excelWorkbook.Connections)
+                {
+                    if (connection.Type != Microsoft.Office.Interop.Excel.XlConnectionType.xlConnectionTypeWORKSHEET) continue;
+                    Microsoft.Office.Interop.Excel.WorksheetDataConnection wbcon = (Microsoft.Office.Interop.Excel.WorksheetDataConnection)connection.WorksheetDataConnection;
+                    string ct = (string)wbcon.CommandText;
+                    if (ct.Contains("Лист1"))
+                        wbcon.CommandText = "Лист1!$A$1:$Z$" + (ii2+2).ToString();//"Лист1!$A$1:$Z$1987"
+                    else if (ct.Contains("Лист2"))
+                        wbcon.CommandText = "Лист2!$A$1:$H$" + (ii + 2).ToString();
+
+                }
+                //connex.cast<Microsoft.Office.Interop.Excel.WorkbookConnection>()
+                Microsoft.Office.Interop.Excel.PivotTable pivot = (Microsoft.Office.Interop.Excel.PivotTable)workSheet2.PivotTables("PivotTable1");
+                //pivot.SourceData = "Лист1!R1C1:R" + NeOprPUList.Count.ToString() + "C8";
+                pivot.RefreshTable();
+
+                if (!checkDirectory(textBox4.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox4.Text);
+
+                if (checkBox4.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    workSheet2.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox4.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+        }
+
+        private void printSpec5()
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон5.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
+                object[,] arr = new object[NeOprPUList.Count, 8];
+                int ii = -1;
+                for (int i = 0; i < NeOprPUList.Count; i++)
+                {
+                    if (!filterSpec3(NeOprPUList[i])) continue;
+                    ii++;
+                    for (int j = 0; j < NeOprPUList[i].Count; j++)
+                        arr[ii, j] = NeOprPUList[i][j];
+                }
+
+                if (ii >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "H" + (ii + 2).ToString());
+                    range.Value = arr;
+                }
+
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[3];
+                arr = new object[inSheet1.Count, 26];
+                int ii2 = -1;
+                for (int i = 0; i < inSheet1.Count; i++)
+                {
+                    if (!filterSpec4(inSheet1[i])) continue;
+                    ii2++;
+                    for (int j = 0; j < inSheet1[i].Count; j++)
+                        arr[ii2, j] = inSheet1[i][j];
+                }
+
+                if (ii2 >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "Z" + (ii2 + 2).ToString());
+                    range.Value = arr;
+                }
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet2 = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                //Microsoft.Office.Interop.Excel.PivotCaches pivotCaches = (Microsoft.Office.Interop.Excel.PivotCaches)excelWorkbook.PivotCaches();
+                Microsoft.Office.Interop.Excel.Connections connex = (Microsoft.Office.Interop.Excel.Connections)excelWorkbook.Connections;
+                foreach (Microsoft.Office.Interop.Excel.WorkbookConnection connection in excelWorkbook.Connections)
+                {
+                    if (connection.Type != Microsoft.Office.Interop.Excel.XlConnectionType.xlConnectionTypeWORKSHEET) continue;
+                    Microsoft.Office.Interop.Excel.WorksheetDataConnection wbcon = (Microsoft.Office.Interop.Excel.WorksheetDataConnection)connection.WorksheetDataConnection;
+                    string ct = (string)wbcon.CommandText;
+                    if (ct.Contains("Лист1"))
+                        wbcon.CommandText = "Лист1!$A$1:$Z$" + (ii2 + 2).ToString();//"Лист1!$A$1:$Z$1987"
+                    else if (ct.Contains("Лист2"))
+                        wbcon.CommandText = "Лист2!$A$1:$H$" + (ii + 2).ToString();
+
+                }
+                //connex.cast<Microsoft.Office.Interop.Excel.WorkbookConnection>()
+                Microsoft.Office.Interop.Excel.PivotTable pivot = (Microsoft.Office.Interop.Excel.PivotTable)workSheet2.PivotTables("PivotTable1");
+                //pivot.SourceData = "Лист1!R1C1:R" + NeOprPUList.Count.ToString() + "C8";
+                pivot.RefreshTable();
+
+                if (!checkDirectory(textBox5.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox5.Text);
+
+                if (checkBox5.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    workSheet2.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox5.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+        }
+
+        private void printSpec6()
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон6.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
+                object[,] arr = new object[NeOprPUList.Count, 8];
+                int ii = -1;
+                for (int i = 0; i < NeOprPUList.Count; i++)
+                {
+                    if (!filterSpec3(NeOprPUList[i])) continue;
+                    ii++;
+                    for (int j = 0; j < NeOprPUList[i].Count; j++)
+                        arr[ii, j] = NeOprPUList[i][j];
+                }
+
+                if (ii >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "H" + (ii + 2).ToString());
+                    range.Value = arr;
+                }
+
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[3];
+                arr = new object[inSheet1.Count, 26];
+                int ii2 = -1;
+                for (int i = 0; i < inSheet1.Count; i++)
+                {
+                    if (!filterSpec4(inSheet1[i])) continue;
+                    ii2++;
+                    for (int j = 0; j < inSheet1[i].Count; j++)
+                        arr[ii2, j] = inSheet1[i][j];
+                }
+
+                if (ii2 >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "Z" + (ii2 + 2).ToString());
+                    range.Value = arr;
+                }
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet2 = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                //Microsoft.Office.Interop.Excel.PivotCaches pivotCaches = (Microsoft.Office.Interop.Excel.PivotCaches)excelWorkbook.PivotCaches();
+                Microsoft.Office.Interop.Excel.Connections connex = (Microsoft.Office.Interop.Excel.Connections)excelWorkbook.Connections;
+                foreach (Microsoft.Office.Interop.Excel.WorkbookConnection connection in excelWorkbook.Connections)
+                {
+                    if (connection.Type != Microsoft.Office.Interop.Excel.XlConnectionType.xlConnectionTypeWORKSHEET) continue;
+                    Microsoft.Office.Interop.Excel.WorksheetDataConnection wbcon = (Microsoft.Office.Interop.Excel.WorksheetDataConnection)connection.WorksheetDataConnection;
+                    string ct = (string)wbcon.CommandText;
+                    if (ct.Contains("Лист1"))
+                        wbcon.CommandText = "Лист1!$A$1:$Z$" + (ii2 + 2).ToString();//"Лист1!$A$1:$Z$1987"
+                    else if (ct.Contains("Лист2"))
+                        wbcon.CommandText = "Лист2!$A$1:$H$" + (ii + 2).ToString();
+
+                }
+                //connex.cast<Microsoft.Office.Interop.Excel.WorkbookConnection>()
+                Microsoft.Office.Interop.Excel.PivotTable pivot = (Microsoft.Office.Interop.Excel.PivotTable)workSheet2.PivotTables("PivotTable1");
+                //pivot.SourceData = "Лист1!R1C1:R" + NeOprPUList.Count.ToString() + "C8";
+                pivot.RefreshTable();
+
+                if (!checkDirectory(textBox6.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox6.Text);
+
+                if (checkBox6.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    workSheet2.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox6.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+        }
+
+        private void printSpec7()
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                generateSpec1();
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон7.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
+                object[,] arr = new object[NeOprPUList.Count, 8];
+                int ii = -1;
+                for (int i = 0; i < NeOprPUList.Count; i++)
+                {
+                    if (!filterSpec3(NeOprPUList[i])) continue;
+                    ii++;
+                    for (int j = 0; j < NeOprPUList[i].Count; j++)
+                        arr[ii, j] = NeOprPUList[i][j];
+                }
+
+                if (ii >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "H" + (ii + 2).ToString());
+                    range.Value = arr;
+                }
+
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[3];
+                arr = new object[inSheet1.Count, 26];
+                int ii2 = -1;
+                for (int i = 0; i < spec1.Count; i++)
+                {
+                    //if (!filterSpec4(inSheet1[i])) continue;
+                    ii2++;
+                    for (int j = 0; j < spec1[i].Count; j++)
+                        arr[ii2, j] = spec1[i][j];
+                }
+
+                if (ii2 >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "P" + (ii2 + 2).ToString());
+                    range.Value = arr;
+                }
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet2 = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                //Microsoft.Office.Interop.Excel.PivotCaches pivotCaches = (Microsoft.Office.Interop.Excel.PivotCaches)excelWorkbook.PivotCaches();
+                Microsoft.Office.Interop.Excel.Connections connex = (Microsoft.Office.Interop.Excel.Connections)excelWorkbook.Connections;
+                foreach (Microsoft.Office.Interop.Excel.WorkbookConnection connection in excelWorkbook.Connections)
+                {
+                    if (connection.Type != Microsoft.Office.Interop.Excel.XlConnectionType.xlConnectionTypeWORKSHEET) continue;
+                    Microsoft.Office.Interop.Excel.WorksheetDataConnection wbcon = (Microsoft.Office.Interop.Excel.WorksheetDataConnection)connection.WorksheetDataConnection;
+                    string ct = (string)wbcon.CommandText;
+                    if (ct.Contains("Лист1"))
+                        wbcon.CommandText = "Лист1!$A$1:$P$" + (ii2 + 2).ToString();
+                    else if (ct.Contains("Лист2"))
+                        wbcon.CommandText = "Лист2!$A$1:$H$" + (ii + 2).ToString();
+
+                }
+                //connex.cast<Microsoft.Office.Interop.Excel.WorkbookConnection>()
+                Microsoft.Office.Interop.Excel.PivotTable pivot = (Microsoft.Office.Interop.Excel.PivotTable)workSheet2.PivotTables("PivotTable1");
+                Microsoft.Office.Interop.Excel.PivotCache pivotCa = (Microsoft.Office.Interop.Excel.PivotCache)pivot.PivotCache();
+                //pivot.SourceData = "Лист1!R1C1:R" + NeOprPUList.Count.ToString() + "C8";
+                //pivot.RefreshDataSourceValues();
+                pivotCa.Refresh();
+                pivot.RefreshTable();
+
+                if (!checkDirectory(textBox7.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox7.Text);
+
+                if (checkBox7.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    workSheet2.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox7.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+        }
+
+        private void printSpec8()
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                generateSpec1();
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+                excelWorkbook = excelApplication.Workbooks.Open(s + "\\Шаблон8.xlsx");
+                if (excelWorkbook == null)
+                    throw new Exception("Не удалось открыть excel файл.");
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
+                object[,] arr = new object[NeOprPUList.Count, 8];
+                int ii = -1;
+                for (int i = 0; i < NeOprPUList.Count; i++)
+                {
+                    if (!filterSpec3(NeOprPUList[i])) continue;
+                    ii++;
+                    for (int j = 0; j < NeOprPUList[i].Count; j++)
+                        arr[ii, j] = NeOprPUList[i][j];
+                }
+
+                if (ii >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "H" + (ii + 2).ToString());
+                    range.Value = arr;
+                }
+
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[3];
+                arr = new object[inSheet1.Count, 26];
+                int ii2 = -1;
+                for (int i = 0; i < spec1.Count; i++)
+                {
+                    //if (!filterSpec4(inSheet1[i])) continue;
+                    ii2++;
+                    for (int j = 0; j < spec1[i].Count; j++)
+                        arr[ii2, j] = spec1[i][j];
+                }
+
+                if (ii2 >= 0)
+                {
+                    Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A2", "P" + (ii2 + 2).ToString());
+                    range.Value = arr;
+                }
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet2 = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                //Microsoft.Office.Interop.Excel.PivotCaches pivotCaches = (Microsoft.Office.Interop.Excel.PivotCaches)excelWorkbook.PivotCaches();
+                Microsoft.Office.Interop.Excel.Connections connex = (Microsoft.Office.Interop.Excel.Connections)excelWorkbook.Connections;
+                foreach (Microsoft.Office.Interop.Excel.WorkbookConnection connection in excelWorkbook.Connections)
+                {
+                    if (connection.Type != Microsoft.Office.Interop.Excel.XlConnectionType.xlConnectionTypeWORKSHEET) continue;
+                    Microsoft.Office.Interop.Excel.WorksheetDataConnection wbcon = (Microsoft.Office.Interop.Excel.WorksheetDataConnection)connection.WorksheetDataConnection;
+                    string ct = (string)wbcon.CommandText;
+                    if (ct.Contains("Лист1"))
+                        wbcon.CommandText = "Лист1!$A$1:$P$" + (ii2 + 2).ToString();
+                    else if (ct.Contains("Лист2"))
+                        wbcon.CommandText = "Лист2!$A$1:$H$" + (ii + 2).ToString();
+
+                }
+                //connex.cast<Microsoft.Office.Interop.Excel.WorkbookConnection>()
+                Microsoft.Office.Interop.Excel.PivotTable pivot = (Microsoft.Office.Interop.Excel.PivotTable)workSheet2.PivotTables("PivotTable1");
+                Microsoft.Office.Interop.Excel.PivotCache pivotCa = (Microsoft.Office.Interop.Excel.PivotCache)pivot.PivotCache();
+                //pivot.SourceData = "Лист1!R1C1:R" + NeOprPUList.Count.ToString() + "C8";
+                //pivot.RefreshDataSourceValues();
+                pivotCa.Refresh();
+                pivot.RefreshTable();
+
+                if (!checkDirectory(textBox8.Text))
+                    throw new Exception("Не верный путь для сохранения файла");
+                loging(0, "Сохранение excel файла...");
+                excelWorkbook.SaveAs(textBox8.Text);
+
+                if (checkBox8.Checked)
+                {
+                    loging(0, "Экспорт в pdf файл...");
+                    workSheet2.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, textBox8.Text.Replace(".xlsx", ".pdf"));
+                }
+            }
+            catch (System.Exception ex)
+            {
+                loging(2, "Ошибка генерации файла. " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
             }
         }
 
@@ -830,6 +1471,17 @@ namespace Specification_Ver2
                 exportToPDF(textBox2.Text, textBox2.Text.Replace(".xlsx", ".pdf"));
         
         }
+
+        private async void button1_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №1...");
+            await Task.Run(() => generateSpec1());
+            await Task.Run(() => printSpec1());
+            loging(1, "Генерация Приложения №1 завершено.");
+            isLoading(false);
+
+        }
         private async void button2_Click(object sender, EventArgs e)
         {
             isLoading(true);
@@ -838,7 +1490,60 @@ namespace Specification_Ver2
             await Task.Run(() => printSpec22());
             loging(1, "Генерация Приложения №2 завершено.");
             isLoading(false);
-        }   
+        }
+        private async void button3_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №3...");
+            //await Task.Run(() => generateSpec2());
+            await Task.Run(() => printSpec3());
+            loging(1, "Генерация Приложения №3 завершено.");
+            isLoading(false);
+        }
+        private async void button4_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №4...");
+            //await Task.Run(() => generateSpec2());
+            await Task.Run(() => printSpec4());
+            loging(1, "Генерация Приложения №4 завершено.");
+            isLoading(false);
+        }
+        private async void button5_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №5...");
+            //await Task.Run(() => generateSpec2());
+            await Task.Run(() => printSpec5());
+            loging(1, "Генерация Приложения №5 завершено.");
+            isLoading(false);
+        }
+        private async void button6_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №6...");
+            //await Task.Run(() => generateSpec2());
+            await Task.Run(() => printSpec6());
+            loging(1, "Генерация Приложения №6 завершено.");
+            isLoading(false);
+        }
+        private async void button7_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №7...");
+            await Task.Run(() => printSpec7());
+            loging(1, "Генерация Приложения №7 завершено.");
+            isLoading(false);
+        }
+
+        private async void button8_Click(object sender, EventArgs e)
+        {
+            isLoading(true);
+            loging(1, "Генерация Приложения №8...");
+            await Task.Run(() => printSpec8());
+            loging(1, "Генерация Приложения №8 завершено.");
+            isLoading(false);
+        }
     }
     public static class RichTextBoxExtensions
     {
