@@ -29,13 +29,13 @@ namespace Specification_Ver2
         List<string> filtrOpornayaPS;
         List<string> filtrTypePU;
         List<string> filtrVariantPU;
-        List<string> filtrTypeUSPD;
+        List<string> filtrTypeUSPD;        
 
         public Form1()
         {
             InitializeComponent();
             isLoading(false);
-            textBox0.Text = "D:\\work\\VisualStudio\\Specification_Ver2\\testInput\\Дахадаевские РЭС Реестр потребителей.xlsx";
+            textBox0.Text = "D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\для программиста\\Дахадаевские РЭС Реестр потребителей.xlsx";
 
             button1.Enabled = false;
             button2.Enabled = false;
@@ -172,6 +172,7 @@ namespace Specification_Ver2
                 loging(2, "Ошибка: " + ex.Message);
             }
         }
+        
         private void updateNeOprPUList()
         {
             foreach (List<string> aRow in NeOprPUList)
@@ -195,14 +196,17 @@ namespace Specification_Ver2
             int p = textBox0.Text.LastIndexOf('.');
             string path = textBox0.Text.Substring(0, s);
             string fileName = textBox0.Text.Substring(s, p-s);
-            textBox1.Text = path + fileName + "\\Приложение1.xlsx";
-            textBox2.Text = path + fileName + "\\Приложение2.xlsx";
-            textBox3.Text = path + fileName + "\\Приложение3.xlsx";
-            textBox4.Text = path + fileName + "\\Приложение4.xlsx";
-            textBox5.Text = path + fileName + "\\Приложение5.xlsx";
-            textBox6.Text = path + fileName + "\\Приложение6.xlsx";
-            textBox7.Text = path + fileName + "\\Приложение7.xlsx";
-            textBox8.Text = path + fileName + "\\Спецификация.xlsx";
+            string psName = "";
+            if (listBoxOpornayaPS.SelectedItems.Count == 1)
+                psName = listBoxOpornayaPS.SelectedItems[0].ToString();
+            textBox1.Text = path + fileName + "\\Приложение №1 Реестр ТП " + psName + ".xlsx";
+            textBox2.Text = path + fileName + "\\Приложение №2 Реестр потребителей " + psName + ".xlsx";
+            textBox3.Text = path + fileName + "\\Приложение №3 Количество неопрашиваемых ПУ по ТП " + psName + ".xlsx";
+            textBox4.Text = path + fileName + "\\Приложение №4 Варианты установки ПУ по фидерам " + psName + ".xlsx";
+            textBox5.Text = path + fileName + "\\Приложение №5 Варианты установки ПУ по ТП " + psName + ".xlsx";
+            textBox6.Text = path + fileName + "\\Приложение №6 Варианты установки по ПС " + psName + ".xlsx";
+            textBox7.Text = path + fileName + "\\Приложение №7 Установка УСПД " + psName + ".xlsx";
+            textBox8.Text = path + fileName + "\\Приложение №8 Количество ТТ по фидерам Опорных подстанций " + psName + ".xlsx";
             button1.Enabled = true;
             button2.Enabled = true;
             button3.Enabled = true;
@@ -212,6 +216,7 @@ namespace Specification_Ver2
             button7.Enabled = true;
             button8.Enabled = true;
         }
+        
         private void generateSpec2()
         {
             
@@ -264,11 +269,13 @@ namespace Specification_Ver2
                 newRow.Add(convertCoord(aRow[18]));//14 
                 newRow.Add(getTypeTT(aRow));  //15
                 newRow.Add(getTypeUSPD(aRow));//16
-                spec1.Add(newRow);
+                spec1.Add(newRow);         
             }
             //loging(1, "Генерация Приложения №1 завершена");
         }
-        private bool filterSpec1(List<string> aRow)
+                       
+
+    private bool filterSpec1(List<string> aRow)
         {
             if (InvokeRequired)
             {
@@ -345,6 +352,7 @@ namespace Specification_Ver2
                 neopCount >= neOprCountFrom.Value &&
                 neopCount <= neOprCountTo.Value;
         }
+       
         private string convertCoord(string coord)
         {
             string newCoord = coord.Replace('.', ',');
@@ -378,6 +386,7 @@ namespace Specification_Ver2
             if (aRow[22] == "1")
                 NeOprPU[res][opor][tp][1]++;
         }
+        
         private decimal getPercentNeopr(string res, string ps, string tp)
         {
             decimal r = -1;
@@ -404,7 +413,6 @@ namespace Specification_Ver2
                 loging(2, "Ошибка. Не найдет процент неопроса для комбинации: " + res + "; " + ps + "; " + tp);
             return r;
         }
-
         private string getVariantPoFaze(List<string> aRow) //Вариант ПУ
         {
             string value14 = aRow[14]; //Тип прибора учёта(ПУ)            
@@ -420,7 +428,6 @@ namespace Specification_Ver2
                 return "Ошибка !!!";
             }
         }
-
         private string getVariantPU(List<string> aRow) //Вариант ПУ
         {
             string value12 = aRow[12]; //Тип ввода
@@ -544,6 +551,7 @@ namespace Specification_Ver2
             else
                 return ">=2 ТТ";
         }
+        
         private string getStringCell(Cell data)
         {
             if (data != null)
@@ -558,6 +566,7 @@ namespace Specification_Ver2
             catch { }
             return test;
         }
+        
         public void isLoading(bool value)
         {
             if (InvokeRequired)
@@ -606,7 +615,7 @@ namespace Specification_Ver2
         }
         private void exportToPDF(string workbookPath, string outputPath)
         {
-            loging(1, "Начано экспорта в pdf.");
+            loging(0, "Экспорта в pdf...");
             Microsoft.Office.Interop.Excel.Application excelApplication = null;
             Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
             try
@@ -635,7 +644,6 @@ namespace Specification_Ver2
             loging(0, "pdf файл успешно сохранен.");
 
         }
-        
         private bool checkDirectory(string dir)
         {
             string path = dir;
@@ -817,7 +825,7 @@ namespace Specification_Ver2
                 if (!checkDirectory(textBox1.Text))
                     throw new Exception("Не верный путь для сохранения файла");
                 book.Save(textBox1.Text, true);
-                loging(0, "Генерация Приложения1 завершено.");
+                //loging(0, "Генерация Приложения1 завершено.");
             }
             catch (Exception ex)
             {
@@ -827,8 +835,6 @@ namespace Specification_Ver2
             if (checkBox1.Checked)
                 exportToPDF(textBox1.Text, textBox1.Text.Replace(".xlsx", ".pdf"));
         }
-
-
         private void printSpec22()
         {
             string s = Environment.CurrentDirectory;
@@ -878,10 +884,9 @@ namespace Specification_Ver2
                     excelApplication.Quit();
                 excelApplication = null;
                 excelWorkbook = null;
-                loging(0, "Генерация Приложения2 завершено.");
+                //loging(0, "Генерация Приложения2 завершено.");
             }
         }
-
         private void printSpec3()
         {
             string s = Environment.CurrentDirectory;
@@ -947,7 +952,6 @@ namespace Specification_Ver2
                 excelWorkbook = null;
             }
         }
-
         private void printSpec4()
         {
             string s = Environment.CurrentDirectory;
@@ -1041,7 +1045,6 @@ namespace Specification_Ver2
                 excelWorkbook = null;
             }
         }
-
         private void printSpec5()
         {
             string s = Environment.CurrentDirectory;
@@ -1135,7 +1138,6 @@ namespace Specification_Ver2
                 excelWorkbook = null;
             }
         }
-
         private void printSpec6()
         {
             string s = Environment.CurrentDirectory;
@@ -1229,7 +1231,6 @@ namespace Specification_Ver2
                 excelWorkbook = null;
             }
         }
-
         private void printSpec7()
         {
             string s = Environment.CurrentDirectory;
@@ -1327,7 +1328,6 @@ namespace Specification_Ver2
                 excelWorkbook = null;
             }
         }
-
         private void printSpec8()
         {
             string s = Environment.CurrentDirectory;
@@ -1425,7 +1425,6 @@ namespace Specification_Ver2
                 excelWorkbook = null;
             }
         }
-
         private void printSpec2()
         {
             
@@ -1535,7 +1534,6 @@ namespace Specification_Ver2
             loging(1, "Генерация Приложения №7 завершено.");
             isLoading(false);
         }
-
         private async void button8_Click(object sender, EventArgs e)
         {
             isLoading(true);
@@ -1544,6 +1542,235 @@ namespace Specification_Ver2
             loging(1, "Генерация Приложения №8 завершено.");
             isLoading(false);
         }
+
+        private void listBoxOpornayaPS_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            updateTexboxes();
+        }
+        ////////////////////////////////////////////////// Спецификация
+
+        public struct ShB_elem
+        {
+            public ShB_elem(string aNumber, string aName, string aColC, string aColF, int aCount, string aColI)
+            {
+                Number = aNumber;
+                Name = aName;
+                ColC = aColC;
+                ColD = "";
+                ColF = aColF;
+                Count = aCount;
+                ColI = aColI;
+            }
+            public string Number { get; set; }
+            public string Name { get; }
+            public string ColC { get; set; }
+            public string ColD { get; set; }
+            public string ColF { get; }
+            public string ColI { get; }
+            public int Count { get; set; }
+        };
+        public Dictionary<string, List<ShB_elem>> ListShB1;// = new Dictionary<string, ShB1_elem>();
+        public Dictionary<string, List<ShB_elem>> ListShB2;// = new Dictionary<string, ShB1_elem>();
+
+        public Dictionary<string, Dictionary<string, string>> shifrs;
+        public Dictionary<string, string> tt2List;
+
+        public struct RP_elem
+        {
+            public RP_elem(string aName, int aCount)
+            {
+                Name = aName;
+                Count = aCount;
+            }
+            public string Name { get; }
+            public int Count { get; }
+        };
+        public Dictionary<string, Dictionary<string, List<RP_elem>>> USPD;
+        public Dictionary<string, Dictionary<string, List<RP_elem>>> PU;
+        public Dictionary<string, Dictionary<string, Dictionary<string, List<RP_elem>>>> TT;
+
+        public void LoadSettings(string file)
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+
+                ListShB1.Clear();
+                ListShB2.Clear();
+
+                excelWorkbook = excelApplication.Workbooks.Open(file);
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                Microsoft.Office.Interop.Excel.Range last = workSheet.Cells.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
+                var arrData = (object[,])workSheet.get_Range("A1", last).Value;
+
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                last = workSheet.Cells.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
+                var arrData2 = (object[,])workSheet.get_Range("A1", last).Value;
+
+
+                int rowCount = arrData.GetUpperBound(0);
+                int colCount = arrData.GetUpperBound(1);
+                if (colCount < 7) throw new Exception("Не верные входные данные ШБ.");
+
+                List<ShB_elem> aList = new List<ShB_elem>();
+                string variatName = "";
+                for (int i = 1; i <= rowCount; i++)
+                {
+                    string aName = getStringFromXML(arrData[i, 2]);
+                    if (aName != "")
+                    {
+                        if (aName.Contains("Вариант"))
+                        {
+                            if (i > 2)
+                                ListShB1.Add(variatName, aList);
+                            variatName = aName;
+                            aList = new List<ShB_elem>();
+                        }
+                        else
+                            aList.Add(new ShB_elem(
+                                getStringFromXML(arrData[i, 1]),
+                                aName,
+                                getStringFromXML(arrData[i, 3]),
+                                getStringFromXML(arrData[i, 6]),
+                                getIntFromXML(arrData[i, 7]),
+                                getStringFromXML(arrData[i, 9])));
+                    }
+                }
+                ListShB1.Add(variatName, aList);
+
+                rowCount = arrData2.GetUpperBound(0);
+                colCount = arrData2.GetUpperBound(1);
+                if (colCount < 7) throw new Exception("Не верные входные данные ШБ ответвл.");
+
+                aList = new List<ShB_elem>();
+                variatName = "";
+                for (int i = 1; i <= rowCount; i++)
+                {
+                    string aName = getStringFromXML(arrData2[i, 2]);
+                    if (aName != "")
+                    {
+                        if (aName.Contains("Вариант"))
+                        {
+                            if (i > 2)
+                                ListShB2.Add(variatName, aList);
+                            variatName = aName;
+                            aList = new List<ShB_elem>();
+                        }
+                        else
+                            aList.Add(new ShB_elem(
+                                getStringFromXML(arrData2[i, 1]),
+                                aName,
+                                getStringFromXML(arrData2[i, 3]),
+                                getStringFromXML(arrData2[i, 6]),
+                                getIntFromXML(arrData2[i, 7]),
+                                getStringFromXML(arrData2[i, 9])));
+                    }
+                }
+                ListShB2.Add(variatName, aList);
+                loging(1, "Файл успешно загружен: " + file + ";");
+            }
+            catch (Exception ex)
+            {
+                loging(2, "Ошибка загрузки Excel файла: " + file + " ; " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+
+        }
+        private string getStringFromXML(object data)
+        {
+            string test = "";
+            try { test = data.ToString(); }
+            catch { }
+            return test;
+        }
+
+        public void LoadShifrs(string file)
+        {
+            string s = Environment.CurrentDirectory;
+            Microsoft.Office.Interop.Excel.Application excelApplication = null;
+            Microsoft.Office.Interop.Excel.Workbook excelWorkbook = null;
+            try
+            {
+                excelApplication = new Microsoft.Office.Interop.Excel.Application();
+                excelApplication.ScreenUpdating = false;
+                excelApplication.DisplayAlerts = false;
+
+                shifrs = new Dictionary<string, Dictionary<string, string>>();
+
+                excelWorkbook = excelApplication.Workbooks.Open(file);
+
+                Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[6];
+                Microsoft.Office.Interop.Excel.Range last = workSheet.Cells.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
+                var arrData = (object[,])workSheet.get_Range("A1", last).Value;
+
+                int rowCount = arrData.GetUpperBound(0);
+                int colCount = arrData.GetUpperBound(1);
+                if (colCount < 9) throw new Exception("Не верные вхрдные данные ШБ.");
+
+                for (int i = 1; i <= rowCount; i++)
+                {
+                    string resName = getStringFromXML(arrData[i, 3]).Trim();
+                    string psName = getStringFromXML(arrData[i, 4]).Trim();
+                    string tksName = getStringFromXML(arrData[i, 9]).Trim();
+                    if (!shifrs.ContainsKey(resName))
+                        shifrs.Add(resName, new Dictionary<string, string>());
+                    if (!shifrs[resName].ContainsKey(psName))
+                        shifrs[resName].Add(psName, tksName);
+                }
+
+                loging(1, "Файл успешно загружен: " + file + ";");
+            }
+            catch (Exception ex)
+            {
+                loging(2, "Ошибка загрузки Excel файла: " + file + " ; " + ex.Message);
+            }
+            finally
+            {
+                if (excelWorkbook != null)
+                    excelWorkbook.Close();
+                if (excelApplication != null)
+                    excelApplication.Quit();
+
+                excelApplication = null;
+                excelWorkbook = null;
+            }
+        }
+
+        private void generateTt2List()
+        {
+            tt2List = new Dictionary<string, string>();
+            foreach (List<string> aRow in inSheet2)
+            {
+                if (!filterSpec1(aRow)) continue;
+                string ttName = getTypeTT(aRow);
+                if (ttName.Contains(">=2 ТТ"))
+                {
+                    string uspdName = (getTypeUSPD(aRow);
+                    string psName = aRow[2];
+                    string vaName = aRow[7];
+                    string fiName = aRow[3];
+                    string key = psName.Trim() + "Фидер №" + fiName.Trim() + uspdName.Trim();
+                    if (!tt2List.ContainsKey(key))
+                        tt2List.Add(key, vaName);
+                }
+            }
+        }
+
     }
     public static class RichTextBoxExtensions
     {

@@ -146,9 +146,9 @@
             this.listBoxOpornayaPS.FormattingEnabled = true;
             this.listBoxOpornayaPS.Location = new System.Drawing.Point(758, 351);
             this.listBoxOpornayaPS.Name = "listBoxOpornayaPS";
-            this.listBoxOpornayaPS.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
             this.listBoxOpornayaPS.Size = new System.Drawing.Size(149, 95);
             this.listBoxOpornayaPS.TabIndex = 7;
+            this.listBoxOpornayaPS.SelectedIndexChanged += new System.EventHandler(this.listBoxOpornayaPS_SelectedIndexChanged);
             // 
             // label1
             // 
@@ -205,7 +205,7 @@
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(137, 23);
             this.button2.TabIndex = 14;
-            this.button2.Text = "Прил - ние 2";
+            this.button2.Text = "Приложение 2";
             this.button2.UseVisualStyleBackColor = true;
             this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
@@ -224,7 +224,7 @@
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(137, 23);
             this.button3.TabIndex = 16;
-            this.button3.Text = "Прил - ние 3";
+            this.button3.Text = "Приложение 3";
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
@@ -243,7 +243,7 @@
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(137, 23);
             this.button4.TabIndex = 18;
-            this.button4.Text = "Прил - ние 4";
+            this.button4.Text = "Приложение 4";
             this.button4.UseVisualStyleBackColor = true;
             this.button4.Click += new System.EventHandler(this.button4_Click);
             // 
