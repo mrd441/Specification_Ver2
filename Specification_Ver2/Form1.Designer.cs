@@ -72,6 +72,9 @@
             this.neOprCountFrom = new System.Windows.Forms.NumericUpDown();
             this.label7 = new System.Windows.Forms.Label();
             this.label8 = new System.Windows.Forms.Label();
+            this.checkBox9 = new System.Windows.Forms.CheckBox();
+            this.button9 = new System.Windows.Forms.Button();
+            this.textBox9 = new System.Windows.Forms.TextBox();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.neOprFrom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.neOprTo)).BeginInit();
@@ -103,9 +106,9 @@
             this.logBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.logBox.Location = new System.Drawing.Point(13, 251);
+            this.logBox.Location = new System.Drawing.Point(13, 280);
             this.logBox.Name = "logBox";
-            this.logBox.Size = new System.Drawing.Size(739, 248);
+            this.logBox.Size = new System.Drawing.Size(739, 219);
             this.logBox.TabIndex = 2;
             this.logBox.Text = "";
             // 
@@ -146,6 +149,7 @@
             this.listBoxOpornayaPS.FormattingEnabled = true;
             this.listBoxOpornayaPS.Location = new System.Drawing.Point(758, 351);
             this.listBoxOpornayaPS.Name = "listBoxOpornayaPS";
+            this.listBoxOpornayaPS.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
             this.listBoxOpornayaPS.Size = new System.Drawing.Size(149, 95);
             this.listBoxOpornayaPS.TabIndex = 7;
             this.listBoxOpornayaPS.SelectedIndexChanged += new System.EventHandler(this.listBoxOpornayaPS_SelectedIndexChanged);
@@ -526,11 +530,43 @@
             this.label8.TabIndex = 43;
             this.label8.Text = "Неопрашиваемых ПУ:";
             // 
+            // checkBox9
+            // 
+            this.checkBox9.AutoSize = true;
+            this.checkBox9.Location = new System.Drawing.Point(156, 255);
+            this.checkBox9.Name = "checkBox9";
+            this.checkBox9.Size = new System.Drawing.Size(47, 17);
+            this.checkBox9.TabIndex = 49;
+            this.checkBox9.Text = "PDF";
+            this.checkBox9.UseVisualStyleBackColor = true;
+            // 
+            // button9
+            // 
+            this.button9.Location = new System.Drawing.Point(13, 251);
+            this.button9.Name = "button9";
+            this.button9.Size = new System.Drawing.Size(137, 23);
+            this.button9.TabIndex = 48;
+            this.button9.Text = "Приложение 8";
+            this.button9.UseVisualStyleBackColor = true;
+            this.button9.Click += new System.EventHandler(this.button9_Click);
+            // 
+            // textBox9
+            // 
+            this.textBox9.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.textBox9.Location = new System.Drawing.Point(209, 253);
+            this.textBox9.Name = "textBox9";
+            this.textBox9.Size = new System.Drawing.Size(543, 20);
+            this.textBox9.TabIndex = 47;
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1035, 511);
+            this.Controls.Add(this.checkBox9);
+            this.Controls.Add(this.button9);
+            this.Controls.Add(this.textBox9);
             this.Controls.Add(this.neOprCountTo);
             this.Controls.Add(this.neOprCountFrom);
             this.Controls.Add(this.label7);
@@ -633,6 +669,9 @@
         private System.Windows.Forms.NumericUpDown neOprCountFrom;
         private System.Windows.Forms.Label label7;
         private System.Windows.Forms.Label label8;
+        private System.Windows.Forms.CheckBox checkBox9;
+        private System.Windows.Forms.Button button9;
+        private System.Windows.Forms.TextBox textBox9;
     }
 }
 
