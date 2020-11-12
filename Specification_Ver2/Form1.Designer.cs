@@ -75,6 +75,7 @@
             this.checkBox9 = new System.Windows.Forms.CheckBox();
             this.button9 = new System.Windows.Forms.Button();
             this.textBox9 = new System.Windows.Forms.TextBox();
+            this.openFileDialog1 = new System.Windows.Forms.OpenFileDialog();
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.neOprFrom)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.neOprTo)).BeginInit();
@@ -88,6 +89,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.textBox0.Location = new System.Drawing.Point(113, 12);
             this.textBox0.Name = "textBox0";
+            this.textBox0.ReadOnly = true;
             this.textBox0.Size = new System.Drawing.Size(639, 20);
             this.textBox0.TabIndex = 0;
             // 
@@ -149,7 +151,7 @@
             this.listBoxOpornayaPS.FormattingEnabled = true;
             this.listBoxOpornayaPS.Location = new System.Drawing.Point(758, 351);
             this.listBoxOpornayaPS.Name = "listBoxOpornayaPS";
-            this.listBoxOpornayaPS.SelectionMode = System.Windows.Forms.SelectionMode.MultiSimple;
+            this.listBoxOpornayaPS.SelectionMode = System.Windows.Forms.SelectionMode.MultiExtended;
             this.listBoxOpornayaPS.Size = new System.Drawing.Size(149, 95);
             this.listBoxOpornayaPS.TabIndex = 7;
             this.listBoxOpornayaPS.SelectedIndexChanged += new System.EventHandler(this.listBoxOpornayaPS_SelectedIndexChanged);
@@ -546,7 +548,7 @@
             this.button9.Name = "button9";
             this.button9.Size = new System.Drawing.Size(137, 23);
             this.button9.TabIndex = 48;
-            this.button9.Text = "Приложение 8";
+            this.button9.Text = "Спецификация";
             this.button9.UseVisualStyleBackColor = true;
             this.button9.Click += new System.EventHandler(this.button9_Click);
             // 
@@ -558,6 +560,11 @@
             this.textBox9.Name = "textBox9";
             this.textBox9.Size = new System.Drawing.Size(543, 20);
             this.textBox9.TabIndex = 47;
+            // 
+            // openFileDialog1
+            // 
+            this.openFileDialog1.FileName = "openFileDialog1";
+            this.openFileDialog1.Filter = "Excel|*.xlsx;*.xls";
             // 
             // Form1
             // 
@@ -672,6 +679,7 @@
         private System.Windows.Forms.CheckBox checkBox9;
         private System.Windows.Forms.Button button9;
         private System.Windows.Forms.TextBox textBox9;
+        private System.Windows.Forms.OpenFileDialog openFileDialog1;
     }
 }
 

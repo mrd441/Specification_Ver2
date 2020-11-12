@@ -36,7 +36,7 @@ namespace Specification_Ver2
         {
             InitializeComponent();
             isLoading(false);
-            textBox0.Text = "D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\для программиста\\Дахадаевские РЭС Реестр потребителей.xlsx";
+            //textBox0.Text = "D:\\VisualStudio\\source\\Specification_Ver2\\testInput\\для программиста\\Дахадаевские РЭС Реестр потребителей.xlsx";
 
             button1.Enabled = false;
             button2.Enabled = false;
@@ -46,13 +46,24 @@ namespace Specification_Ver2
             button6.Enabled = false;
             button7.Enabled = false;
             button8.Enabled = false;
+            button9.Enabled = false;
+
         }
 
         private async void readFile_Click(object sender, EventArgs e)
         {
-            isLoading(true);
-            await Task.Run(() => proc1());
-            isLoading(false);
+            //openFileDialog1.InitialDirectory = "c:\\";
+            //openFileDialog1.Filter = "txt files (*.xls)|*.xlsx";
+            //openFileDialog1.FilterIndex = 1;
+            //openFileDialog1.RestoreDirectory = true;
+
+            if (openFileDialog1.ShowDialog() == DialogResult.OK)
+            {
+                textBox0.Text = openFileDialog1.FileName;
+                isLoading(true);
+                await Task.Run(() => proc1());
+                isLoading(false);
+            }            
         }
         private void proc1()
         {
@@ -237,6 +248,13 @@ namespace Specification_Ver2
             textBox6.Text = path + fileName + "\\Приложение №6 Варианты установки по ПС " + psName + ".xlsx";
             textBox7.Text = path + fileName + "\\Приложение №7 Установка УСПД " + psName + ".xlsx";
             textBox8.Text = path + fileName + "\\Приложение №8 Количество ТТ по фидерам Опорных подстанций " + psName + ".xlsx";
+            textBox9.Text = path + fileName + "\\Спецификация " + psName + ".xlsx";
+
+            //string newFileFullName = tmpDirName + "\\";// + tmpFileName.Replace(".xlsx", "_" + city + ".xlsx");
+            //if (ttError)
+            //    newFileFullName = newFileFullName + "!!";
+            //newFileFullName = newFileFullName + city + " СО.xlsx";//tmpFileName.Replace(".xlsx", "_" + city + ".xlsx");
+
             button1.Enabled = true;
             button2.Enabled = true;
             button3.Enabled = true;
@@ -245,6 +263,7 @@ namespace Specification_Ver2
             button6.Enabled = true;
             button7.Enabled = true;
             button8.Enabled = true;
+            button9.Enabled = true;
         }
 
         private void generateSpec2()
@@ -615,6 +634,8 @@ namespace Specification_Ver2
             button6.Enabled = !value;
             button7.Enabled = !value;
             button8.Enabled = !value;
+            button9.Enabled = !value;
+
             textBox1.Enabled = !value;
             textBox2.Enabled = !value;
             textBox3.Enabled = !value;
@@ -623,6 +644,7 @@ namespace Specification_Ver2
             textBox6.Enabled = !value;
             textBox7.Enabled = !value;
             textBox8.Enabled = !value;
+            textBox9.Enabled = !value;
 
             listBox1.Enabled = !value;
             listBoxTypePS.Enabled = !value;
@@ -1628,7 +1650,7 @@ namespace Specification_Ver2
                 Microsoft.Office.Interop.Excel.Range last = workSheet.Cells.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
                 var arrData = (object[,])workSheet.get_Range("A1", last).Value;
 
-                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
+                workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];
                 last = workSheet.Cells.SpecialCells(Microsoft.Office.Interop.Excel.XlCellType.xlCellTypeLastCell, Type.Missing);
                 var arrData2 = (object[,])workSheet.get_Range("A1", last).Value;
 
@@ -1829,15 +1851,15 @@ namespace Specification_Ver2
                 excelApplication.ScreenUpdating = false;
                 excelApplication.DisplayAlerts = false;
 
-                string templateFileName = Directory.GetCurrentDirectory() + "\\Спецификация.xlsx";
+                string templateFileName = Directory.GetCurrentDirectory() + "\\ШаблонСпецификация.xlsx";
                 if (!File.Exists(templateFileName))
                     throw new Exception("не найден шаблон выходного файла");
 
 
-                string tmpFileName = textBox1.Text.Split('\\').Last();
+                string tmpFileName = textBox0.Text.Split('\\').Last();
 
                 string resName = tmpFileName.Trim().Replace("_", " ").Replace(" Реестр потребителей.xlsx", "");
-                string tmpDirName = textBox1.Text.Replace(".xlsx", "");
+                string tmpDirName = textBox0.Text.Replace(".xlsx", "");
                 if (!Directory.Exists(tmpDirName))
                     Directory.CreateDirectory(tmpDirName);
 
@@ -1851,13 +1873,13 @@ namespace Specification_Ver2
                     foreach (string fider in PU[city].Keys)
                     {
                         result.Add(new ShB_elem("", city + " " + fider, "", "", 0, ""));
-                        caption1List.Add(result.Count + 2 + incrementIndex(result.Count));
+                        caption1List.Add(result.Count + incrementIndex(result.Count));
 
                         foreach (string varName in PU[city][fider].Keys)
                         {
                             int varCount = PU[city][fider][varName];
                             result.Add(new ShB_elem("", varName, "", "", 0, ""));
-                            caption2List.Add(result.Count + 2 + incrementIndex(result.Count));
+                            caption2List.Add(result.Count + incrementIndex(result.Count));
 
                             try
                             {
@@ -1866,7 +1888,7 @@ namespace Specification_Ver2
                                     ShB_elem newEl = el;
                                     newEl.Count = newEl.Count * varCount;
                                     result.Add(newEl);
-                                    if (newEl.ColC.Length > 24) londTextList.Add(result.Count + 2 + incrementIndex(result.Count));
+                                    if (newEl.ColC.Length > 20) londTextList.Add(result.Count + incrementIndex(result.Count));
                                 }
                             }
                             catch (Exception ex)
@@ -1878,17 +1900,19 @@ namespace Specification_Ver2
                             foreach (string varName2 in TT[city][fider].Keys)
                             {
                                 result.Add(new ShB_elem("", varName2, "", "", 0, ""));
-                                caption2List.Add(result.Count + 2 + incrementIndex(result.Count));
+                                caption2List.Add(result.Count + incrementIndex(result.Count));
 
                                 int varCount2 = 0;
                                 foreach (string aTp in TT[city][fider][varName2].Keys)
                                     varCount2 = varCount2 + TT[city][fider][varName2][aTp];
-                                /////stop here
+                                
+
                                 foreach (ShB_elem el in ListShB1[varName2])
                                 {
                                     ShB_elem newEl = el;
                                     newEl.Count = newEl.Count * varCount2;
                                     result.Add(newEl);
+                                    if (newEl.ColC.Length > 20) londTextList.Add(result.Count + incrementIndex(result.Count));
                                 }
                                 result.RemoveAt(result.Count - 1);
                                 int index = 0;
@@ -1909,6 +1933,7 @@ namespace Specification_Ver2
                                     TP.Count = TP.Count * TT[city][fider][varName2][aTp];
                                     TP.ColD = vaName;
                                     result.Add(TP);
+                                    if (TP.ColC.Length > 20) londTextList.Add(result.Count + incrementIndex(result.Count));
                                 }
                             }
                     }
@@ -1934,28 +1959,26 @@ namespace Specification_Ver2
                     double pageCount = (pageCount1 > 0) ? 39 + pageCount2 * 37 : 39;
 
                     excelWorkbook = excelApplication.Workbooks.Open(templateFileName);
-                    Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];//2
+                    Microsoft.Office.Interop.Excel.Worksheet workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];//2
 
                     workSheet.Cells.ClearContents();
 
                     Microsoft.Office.Interop.Excel.Range range = workSheet.get_Range("A3", "I" + (result.Count + 2).ToString());
                     range.Value = arr;
 
-                    //workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];
-                    //workSheet.get_Range("B5").Value = resName;
-                    //string shifrName = getShifr(resName, city);
-                    //workSheet.get_Range("A17").Value = shifrName;
-                    //if (shifrName == "")
-                    //    loging(2, "не найден шифр для " + resName + " " + city);
-
-                    workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[2];//3
-                    // xlSht.HPageBreaks[4].Location = xlSht.get_Range("A152");
-                    //xlSht.VPageBreaks .Location = xlSht.get_Range("A152");
+                    workSheet = (Microsoft.Office.Interop.Excel.Worksheet)excelWorkbook.Worksheets[1];//3
                     string shtName = city;
-
                     workSheet.get_Range("Z35").Value = (pageCount2 + 1).ToString();
                     workSheet.get_Range("R34").Value = DateTime.Now.ToString("dd.MM.yyy");
                     workSheet.get_Range("S34").Value = city;
+                    workSheet.get_Range("S31").Value = "Создание системы учета в рамках «Плана (Программы) " +
+                        "снижения потерь электрической энергии в электрических сетях Республики Дагестан на" +
+                        " 2018-2022 годы, реализуемого на объектах филиала ПАО «МРСК Северного Кавказа» - «Дагэнерго». " + resName;
+                    //workSheet.get_Range("B5").Value = resName;
+                    string shifrName = getShifr(resName, city);
+                    workSheet.get_Range("S29").Value = shifrName;
+                    if (shifrName == "")
+                        loging(2, "не найден шифр для " + resName + " " + city);
 
                     foreach (int rowNum in caption1List)
                     {
@@ -1974,16 +1997,21 @@ namespace Specification_Ver2
                     foreach (int rowNum in londTextList)
                     {
                         range = workSheet.get_Range("K" + rowNum.ToString());
-                        range.Font.Size = 10;
+                        range.Font.Size = 8;
+                    }    
+
+                    string newFileFullName = textBox9.Text;
+                    if (!newFileFullName.Contains("ПС"))
+                        newFileFullName = newFileFullName.Replace(".xlsx", city + ".xlsx");
+
+                    excelWorkbook.SaveAs(newFileFullName);
+
+                    if (checkBox9.Checked)
+                    {
+                        loging(0, "Экспорт в pdf файл...");
+                        workSheet.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, newFileFullName.Replace(".xlsx", ".pdf"), Microsoft.Office.Interop.Excel.XlFixedFormatQuality.xlQualityStandard, false,true,1, (int)pageCount2 + 1);
                     }
 
-
-                    string newFileFullName = tmpDirName + "\\";// + tmpFileName.Replace(".xlsx", "_" + city + ".xlsx");
-                    if (ttError)
-                        newFileFullName = newFileFullName + "!!";
-                    newFileFullName = newFileFullName + city + " СО.xlsx";//tmpFileName.Replace(".xlsx", "_" + city + ".xlsx");
-                    excelWorkbook.SaveAs(newFileFullName);
-                    workSheet.ExportAsFixedFormat(Microsoft.Office.Interop.Excel.XlFixedFormatType.xlTypePDF, newFileFullName.Replace(".xlsx", ".pdf"));
                     if (ttError)
                         loging(2, "Файл сохранен с ошибкой: " + newFileFullName);
                     else
@@ -2010,18 +2038,19 @@ namespace Specification_Ver2
             }
         }
 
-        public int incrementIndex(double rowCount)
-        {
-            int result = 0;
-            double pageCount1 = Math.Ceiling((rowCount - 24) / 29) + 1;
-            int pageCount = Convert.ToInt32(pageCount1);
-            if (pageCount > 1)
-                result = 15 + (pageCount - 2) * 8;
-            //if (pageCount > 8)
-            //    result++;
-            //if (pageCount == 9)
-            //    result++;
-            return result;
+        public int incrementIndex(int rowCount)
+        {            
+            if (rowCount>24)
+            {
+                //pageCount = (int)Math.Floor(rowCount/ 29);
+                int aa;
+                int pageCount = Math.DivRem(rowCount, 29, out aa);
+                return (pageCount - 1) * 8 + 17;
+            }
+            else
+            {
+                return 2;
+            }
         }
 
         public string getShifr(string resName, string psName)
@@ -2042,13 +2071,18 @@ namespace Specification_Ver2
             else
                 return "";
         }
-        private void button9_Click(object sender, EventArgs e)
+        private async void button9_Click(object sender, EventArgs e)
         {
             isLoading(true);
-            LoadSettings();
-            LoadShifrs();
-            generateTt2List();
-            GenerateData();
+            loging(1, "Генерация Спецификации...");
+            loging(0, "Загрузка вариантов устройств...");
+            await Task.Run(() => LoadSettings());
+            loging(0, "Загрузка шифров...");
+            await Task.Run(() => LoadShifrs());
+            loging(0, "Сохранение Excel файла...");
+            await Task.Run(() => generateTt2List());
+            await Task.Run(() => GenerateData());
+            loging(1, "Генерация Спецификации завершено.");
             isLoading(false);
         }
     }
